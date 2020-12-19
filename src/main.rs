@@ -2,12 +2,13 @@ use bevy::prelude::{App, Commands, ResMut, Assets, ColorMaterial, Res, AssetServ
 use bevy::DefaultPlugins;
 use bevy::sprite::{Sprite, SpriteResizeMode};
 use bevy::render::camera::{CameraProjection, DepthCalculation, Camera, VisibleEntities, OrthographicProjection, WindowOrigin};
-use bevy::ecs::Query;
+use bevy::ecs::{Query, With};
 use bevy::render::render_graph::base;
 use bevy::render::texture::Texture;
 use bevy::sprite::SpriteResizeMode::Automatic;
 
 struct Background;
+struct Player;
 
 const W: f32 = 160.0;
 const H: f32 = 144.0;
@@ -20,7 +21,7 @@ fn main() {
         .run();
 }
 
-fn size_scaling(windows: Res<Windows>, mut q: Query<(&mut Sprite, &mut Transform)>) {
+fn size_scaling(windows: Res<Windows>, mut q: Query<&mut Transform, With<Sprite>>) {
     let window = windows.get_primary().unwrap();
     let scale_h = window.height() / H;
     let scale_w = window.width() / W;
@@ -37,6 +38,7 @@ fn size_scaling(windows: Res<Windows>, mut q: Query<(&mut Sprite, &mut Transform
 
 fn setup(commands: &mut Commands, mut materials: ResMut<Assets<ColorMaterial>>, asset_server: Res<AssetServer>,) {
     let background_handle = asset_server.load("background.png");
+    let player = asset_server.load("player.png");
     commands
         // https://github.com/bevyengine/bevy/issues/239 can't zoom in for now. Monitor https://discord.com/channels/691052431525675048/742884593551802431/789823348401242133
         .spawn(Camera2dBundle::default())
@@ -44,5 +46,10 @@ fn setup(commands: &mut Commands, mut materials: ResMut<Assets<ColorMaterial>>, 
         .spawn(SpriteBundle {
             material: materials.add(background_handle.into()),
             ..Default::default()
-        }).with(Background).with(Resize { x: 160, y: 144 });
+        }).with(Background)
+        // Player
+        .spawn(SpriteBundle {
+            material: materials.add(player.into()),
+            ..Default::default()
+        }).with(Player);
 }
