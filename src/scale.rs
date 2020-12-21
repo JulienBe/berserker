@@ -4,18 +4,32 @@ use bevy::prelude::Sprite;
 const W: f32 = 160.0;
 const H: f32 = 144.0;
 
-pub(crate) struct Scale { h: f32, w: f32, pub(crate) g: f32 }
+pub(crate) struct Scale {
+    h: f32, w: f32, pub(crate) g: f32,
+    win_w: f32, win_h: f32,
+}
 // remove when camera issue fixed
 impl Default for Scale {
     fn default() -> Self {
         Self {
-            h: 0.0, w: 0.0, g: 0.0,
+            h: 0.0, w: 0.0, g: 0.0, win_w: 0.0, win_h: 0.0,
         }
     }
 }
 
 impl Scale {
+    pub(crate) fn to_screen_coord(&self, coord: f32) -> f32 {
+        coord * self.g
+    }
+    pub(crate) fn to_ig_coord_x(&self, screen_coord_x: f32) -> usize {
+        ((screen_coord_x + self.win_w * 0.5) / self.g) as usize
+    }
+    pub(crate) fn to_ig_coord_y(&self, screen_coord_y: f32) -> usize {
+        ((screen_coord_y + self.win_h * 0.5) / self.g) as usize
+    }
     pub(crate) fn update(&mut self, window_w: f32, window_h: f32) {
+        self.win_w = window_w;
+        self.win_h = window_h;
         self.w = window_w / W;
         self.h = window_h / H;
         self.g = if self.h > self.w {
